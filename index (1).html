@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Global Job Market Atlas — India · New Zealand · World</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#14161B;
+    --paper-2:#21262F;
+    --ink:#ECEAE2;
+    --ink-soft:#9BA1AC;
+    --line:#2E343F;
+    --india:#E87B4D;     /* terracotta */
+    --india-soft:#3A2519;
+    --nz:#34A9BD;        /* teal */
+    --nz-soft:#103138;
+    --world:#93A1B5;     /* slate blue */
+    --world-soft:#2A313C;
+    --good:#6BBE7E;
+    --warn:#DAA646;
+    --bad:#E5775C;
+    --card:#1A1E25;
+    --shadow:0 1px 0 rgba(255,255,255,.02), 0 16px 36px -20px rgba(0,0,0,.8);
+    --ai-red:#EF7B6A;    --ai-red-bg:#3A211D;
+    --ai-orange:#E59A4A; --ai-orange-bg:#3A2C16;
+    --ai-green:#6BBE7E;  --ai-green-bg:#1D3326;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Hanken Grotesk',sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(circle at 12% 18%, rgba(232,123,77,.10), transparent 42%),
+                     radial-gradient(circle at 88% 8%, rgba(52,169,189,.09), transparent 44%);
+  }
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:999;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .wrap{max-width:1180px;margin:0 auto;padding:34px 22px 80px}
+
+  /* ---------- Header ---------- */
+  header.masthead{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:26px}
+  .kicker{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-soft)}
+  h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(34px,6vw,58px);line-height:.98;letter-spacing:-.02em;margin:8px 0 6px}
+  h1 em{font-style:italic;color:var(--india)}
+  .dek{font-size:15.5px;color:var(--ink-soft);max-width:62ch}
+
+  /* ---------- Macro cards ---------- */
+  .macro{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:26px 0 30px}
+  .mcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .mcard:before{content:"";position:absolute;top:0;left:0;width:100%;height:4px}
+  .mcard.india:before{background:var(--india)}
+  .mcard.nz:before{background:var(--nz)}
+  .mcard.world:before{background:var(--world)}
+  .mcard h3{font-family:'Fraunces',serif;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .flag{font-size:18px}
+  .mcard .sub{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin:2px 0 14px}
+  .mstat{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-top:1px dashed var(--line);font-size:13.5px}
+  .mstat:first-of-type{border-top:none}
+  .mstat b{font-family:'Space Mono',monospace;font-weight:700;font-size:15px}
+  .india b{color:var(--india)} .nz b{color:var(--nz)} .world b{color:var(--world)}
+  .livebadge{display:inline-flex;align-items:center;gap:5px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;margin-top:12px;color:var(--ink-soft)}
+  .livedot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(107,190,126,.6);animation:pulse 2s infinite}
+  .livedot.stale{background:var(--ink-soft);animation:none}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(107,190,126,.5)}70%{box-shadow:0 0 0 6px rgba(107,190,126,0)}100%{box-shadow:0 0 0 0 rgba(107,190,126,0)}}
+
+  /* ---------- Controls ---------- */
+  .controls{position:sticky;top:0;z-index:50;background:linear-gradient(var(--paper) 70%,transparent);
+    padding:14px 0 16px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:18px;align-items:flex-end;border-bottom:1px solid var(--line)}
+  .cgroup label{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:7px}
+  .seg{display:inline-flex;background:var(--paper-2);border:1px solid var(--line);border-radius:10px;padding:3px;gap:3px}
+  .seg button{font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:13px;border:none;background:transparent;color:var(--ink-soft);
+    padding:7px 13px;border-radius:7px;cursor:pointer;transition:all .18s ease;white-space:nowrap}
+  .seg button:hover{color:var(--ink)}
+  .seg button.active{background:var(--ink);color:var(--paper);box-shadow:0 2px 8px -3px rgba(0,0,0,.4)}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--ink-soft);margin-left:auto;align-items:center}
+  .lk{display:inline-flex;align-items:center;gap:6px}
+  .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .dot.i{background:var(--india)} .dot.n{background:var(--nz)} .dot.w{background:var(--world)}
+
+  .metric-note{font-size:13px;color:var(--ink-soft);margin:0 0 18px;padding:10px 14px;background:var(--paper-2);border-left:3px solid var(--india);border-radius:0 8px 8px 0}
+  .metric-note b{color:var(--ink)}
+  .metric-note .cav{display:inline;font-size:12px;color:var(--warn);font-style:italic;font-weight:500}
+
+  /* ---------- Scores disclaimer ---------- */
+  .disclaimer{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(180deg,#2B2616,#241F12);
+    border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:0 11px 11px 0;
+    padding:14px 16px;margin:0 0 22px;font-size:12.5px;color:var(--ink-soft);line-height:1.58}
+  .disclaimer .dico{font-size:17px;flex-shrink:0;line-height:1.3}
+  .disclaimer b{color:var(--ink)}
+  .disclaimer .dt{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--warn);font-weight:700;display:block;margin-bottom:5px}
+
+  /* ---------- Groups & sectors ---------- */
+  .group{margin-bottom:14px}
+  .group-head{display:flex;align-items:center;gap:12px;margin:24px 0 10px}
+  .group-head .gnum{font-family:'Space Mono',monospace;font-size:12px;color:var(--india);font-weight:700}
+  .group-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;letter-spacing:-.01em}
+  .group-head .gline{flex:1;height:1px;background:var(--line)}
+
+  .sector{background:var(--card);border:1px solid var(--line);border-radius:13px;margin-bottom:9px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .2s}
+  .sector.open{border-color:var(--ink)}
+  .srow{display:grid;grid-template-columns:26px 1.9fr 3fr 90px;gap:14px;align-items:center;padding:15px 18px;cursor:pointer}
+  .srow:hover{background:var(--paper)}
+  .chev{font-size:13px;color:var(--ink-soft);transition:transform .2s}
+  .sector.open .chev{transform:rotate(90deg)}
+  .sname{font-weight:600;font-size:15.5px}
+  .sname .micon{margin-right:8px}
+  .stag{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:2px}
+
+  /* bars */
+  .bars{display:flex;flex-direction:column;gap:6px}
+  .bar{display:flex;align-items:center;gap:8px;font-size:11.5px}
+  .bar .blab{width:18px;font-family:'Space Mono',monospace;font-weight:700;font-size:10px;color:var(--ink-soft)}
+  .track{flex:1;height:16px;background:var(--paper-2);border-radius:4px;overflow:hidden;position:relative}
+  .fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:2px}
+  .fill.i{background:linear-gradient(90deg,var(--india),#f5a071)}
+  .fill.n{background:linear-gradient(90deg,var(--nz),#5fc8d8)}
+  .fill.w{background:linear-gradient(90deg,var(--world),#b3bdcb)}
+  .bval{font-family:'Space Mono',monospace;font-weight:700;font-size:11px;min-width:62px;text-align:right}
+
+  /* growth / demand pill in summary col */
+  .pillset{display:flex;flex-direction:column;gap:5px}
+  .gpill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:20px;font-weight:600;width:fit-content}
+  .gpill .gf{font-size:9px;font-family:'Space Mono',monospace;opacity:.7}
+  .g-strong{background:#1D3326;color:var(--good)}
+  .g-grow{background:#1A2E22;color:var(--good)}
+  .g-stable{background:var(--paper-2);color:var(--ink-soft)}
+  .g-decline{background:#3A211D;color:var(--bad)}
+  .demand{display:flex;gap:3px;align-items:center}
+  .ddot{width:8px;height:8px;border-radius:50%;background:var(--line)}
+  .ddot.on.i{background:var(--india)} .ddot.on.n{background:var(--nz)} .ddot.on.w{background:var(--world)}
+
+  .score{text-align:right}
+  .score .big{font-family:'Fraunces',serif;font-weight:600;font-size:22px;line-height:1}
+  .score .cap{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+
+  /* ---------- Roles drawer ---------- */
+  .roles{display:none;border-top:1px solid var(--line);background:var(--paper);padding:6px 18px 18px}
+  .sector.open .roles{display:block}
+  .roles-head{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin:14px 0 10px}
+  .rtable{width:100%;border-collapse:collapse}
+  .rtable th{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);text-align:left;padding:6px 10px;font-weight:700;border-bottom:1px solid var(--line)}
+  .rtable th.r{text-align:right}
+  .rtable td{padding:9px 10px;font-size:13px;border-bottom:1px dashed var(--line);vertical-align:middle}
+  .rtable tr:last-child td{border-bottom:none}
+  .rname{font-weight:600}
+  .rtable td.r{text-align:right;font-family:'Space Mono',monospace;font-size:12px}
+  .rtrend{font-family:'Space Mono',monospace;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:14px;white-space:nowrap}
+  .t-up{background:#1D3326;color:var(--good)}
+  .t-hot{background:#3A2519;color:var(--india)}
+  .t-flat{background:var(--paper-2);color:var(--ink-soft)}
+  .t-down{background:#3A211D;color:var(--bad)}
+  .rsalary-i{color:var(--india)} .rsalary-n{color:var(--nz)}
+
+  /* ---------- Insights strip ---------- */
+  .insights{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:34px 0 10px}
+  .icard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:var(--shadow)}
+  .icard .ih{font-family:'Fraunces',serif;font-weight:600;font-size:16px;margin-bottom:8px;display:flex;gap:8px;align-items:center}
+  .icard p{font-size:13px;color:var(--ink-soft)}
+  .icard .em{color:var(--ink);font-weight:600}
+
+  /* ---------- Resilience / upskilling section ---------- */
+  .reslab{margin:46px 0 6px;text-align:center}
+  .reslab .kicker{display:block;margin-bottom:6px}
+  .reslab h2{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(24px,4vw,34px);letter-spacing:-.01em}
+  .reslab p{font-size:14px;color:var(--ink-soft);max-width:64ch;margin:8px auto 0}
+  .resstats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0 30px}
+  .rstat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 14px;text-align:center;box-shadow:var(--shadow)}
+  .rstat .num{font-family:'Fraunces',serif;font-weight:600;font-size:30px;line-height:1;color:var(--nz)}
+  .rstat .lab{font-size:11.5px;color:var(--ink-soft);margin-top:7px;line-height:1.4}
+  .ladder{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:26px}
+  .lcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0;box-shadow:var(--shadow);overflow:hidden}
+  .lcard .lhead{padding:15px 17px 13px;border-bottom:1px solid var(--line)}
+  .lcard .lhead .ltier{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:5px}
+  .lcard .lhead h3{font-family:'Fraunces',serif;font-weight:600;font-size:18px;display:flex;gap:8px;align-items:center}
+  .lcard .lhead .ldesc{font-size:12px;color:var(--ink-soft);margin-top:5px}
+  .lcard.t1 .lhead{border-top:4px solid var(--ai-green)}
+  .lcard.t2 .lhead{border-top:4px solid var(--ai-orange)}
+  .lcard.t3 .lhead{border-top:4px solid var(--nz)}
+  .lcard ul{list-style:none;padding:13px 17px 16px;margin:0}
+  .lcard li{display:flex;gap:9px;font-size:13px;padding:6px 0;color:var(--ink);align-items:flex-start;line-height:1.45}
+  .lcard li:before{content:"›";color:var(--nz);font-weight:700;flex-shrink:0}
+  .lcard li b{color:var(--ink)}
+  .skillgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+  .skillcol{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+  .skillcol h4{font-family:'Fraunces',serif;font-weight:600;font-size:16px;margin-bottom:12px;display:flex;gap:8px;align-items:center}
+  .srank{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .srank:last-child{border-bottom:none}
+  .srank .sr{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--ink-soft);width:18px;flex-shrink:0}
+  .srank .sbar{flex:1;height:8px;background:var(--paper-2);border-radius:4px;overflow:hidden}
+  .srank .sbf{height:100%;border-radius:4px}
+  .tech .sbf{background:linear-gradient(90deg,var(--nz),#5fc8d8)}
+  .human .sbf{background:linear-gradient(90deg,var(--india),#f5a071)}
+  .srank .snm{width:160px;flex-shrink:0}
+  .country-tips{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:8px}
+  .ctip{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:var(--shadow)}
+  .ctip:before{content:"";display:block;height:3px;border-radius:3px;margin:-16px -16px 13px;width:calc(100% + 32px)}
+  .ctip.india:before{background:var(--india)} .ctip.nz:before{background:var(--nz)} .ctip.world:before{background:var(--world)}
+  .ctip h4{font-family:'Fraunces',serif;font-size:16px;font-weight:600;display:flex;gap:7px;align-items:center;margin-bottom:9px}
+  .ctip p{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+
+  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-soft);line-height:1.7}
+  footer b{color:var(--ink)}
+  footer .src{font-family:'Space Mono',monospace;font-size:10px}
+
+  /* ---------- AI impact ---------- */
+  .ai-chip{display:inline-flex;align-items:center;gap:5px;font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:11.5px;padding:2px 9px;border-radius:20px;margin:0 2px}
+  .ai-red{background:var(--ai-red-bg);color:var(--ai-red)}
+  .ai-orange{background:var(--ai-orange-bg);color:var(--ai-orange)}
+  .ai-green{background:var(--ai-green-bg);color:var(--ai-green)}
+  .ai-panel{border-top:1px solid var(--line);margin-top:6px;padding-top:4px}
+  .ai-row{display:grid;grid-template-columns:30px 130px 1fr;gap:12px;align-items:start;padding:10px 0;border-bottom:1px dashed var(--line)}
+  .ai-row:last-child{border-bottom:none}
+  .ai-flag{font-size:18px;line-height:1.4}
+  .ai-badge{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:11px;padding:4px 9px;border-radius:8px;height:fit-content;white-space:nowrap}
+  .ai-cname{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.65;display:block;margin-bottom:3px;color:var(--ink)}
+  .ai-note{font-size:13px;color:var(--ink-soft);line-height:1.45}
+
+  /* ---------- Budget drivers + 2-yr outlook ---------- */
+  .drivers{display:none;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 22px}
+  .drivers.show{display:grid}
+  .dcard{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:16px 16px 14px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .dcard:before{content:"";position:absolute;top:0;left:0;width:100%;height:3px}
+  .dcard.india:before{background:var(--india)} .dcard.nz:before{background:var(--nz)} .dcard.world:before{background:var(--world)}
+  .dcard h4{font-family:'Fraunces',serif;font-size:16px;font-weight:600;display:flex;gap:7px;align-items:center}
+  .dcard .dmacro{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.04em;color:var(--ink-soft);margin:3px 0 9px}
+  .dcard p{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+  .dcard .src{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-top:10px;display:block;opacity:.8}
+  .track.rng{overflow:visible}
+  .rng .zero{position:absolute;top:-3px;height:22px;width:1px;background:var(--ink);opacity:.22}
+  .rng .band{position:absolute;top:0;height:100%;border-radius:4px;opacity:.4}
+  .rng .band.i{background:var(--india)} .rng .band.n{background:var(--nz)} .rng .band.w{background:var(--world)}
+  .rng .basept{position:absolute;top:-2px;width:3px;height:20px;border-radius:2px}
+  .rng .basept.i{background:var(--india)} .rng .basept.n{background:var(--nz)} .rng .basept.w{background:var(--world)}
+  .sens{font-family:'Space Mono',monospace;font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:6px}
+  .sens-Low{background:var(--ai-green-bg);color:var(--ai-green)}
+  .sens-Med{background:#3A2C16;color:var(--warn)}
+  .sens-High{background:var(--ai-red-bg);color:var(--ai-red)}
+
+  @media(max-width:860px){
+    .drivers.show{grid-template-columns:1fr}
+    .macro,.insights{grid-template-columns:1fr}
+    .srow{grid-template-columns:22px 1fr;gap:8px}
+    .srow .bars,.srow .score{grid-column:2/3}
+    .score{text-align:left;margin-top:4px}
+    .controls{position:static}
+    .legend{margin-left:0;width:100%}
+    .resstats{grid-template-columns:1fr 1fr}
+    .ladder,.skillgrid,.country-tips{grid-template-columns:1fr}
+    .srank .snm{width:130px}
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker">Labour Market Intelligence · 2024–2030 outlook</div>
+    <h1>The Global Job<br>Market <em>Atlas</em></h1>
+    <p class="dek">A drill-down view of where the world works — from high-level business groupings to individual sectors and roles. <b>India</b> and <b>New&nbsp;Zealand</b> compared side by side against the <b>wider world</b>, across workforce size, growth outlook, pay and hiring demand.</p>
+  </header>
+
+  <!-- Macro snapshot -->
+  <section class="macro" id="macro"></section>
+
+  <!-- Controls -->
+  <div class="controls">
+    <div class="cgroup">
+      <label>Metric</label>
+      <div class="seg" id="metricSeg">
+        <button data-metric="share" class="active">Workforce size</button>
+        <button data-metric="growth">Growth outlook</button>
+        <button data-metric="salary">Salary</button>
+        <button data-metric="demand">Hiring demand</button>
+        <button data-metric="ai">AI impact</button>
+        <button data-metric="outlook">2-yr outlook</button>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="lk"><span class="dot i"></span>India</span>
+      <span class="lk"><span class="dot n"></span>New Zealand</span>
+      <span class="lk"><span class="dot w"></span>World</span>
+    </div>
+  </div>
+
+  <div class="metric-note" id="metricNote"></div>
+
+  <!-- Persistent disclaimer on scoring scales -->
+  <div class="disclaimer">
+    <span class="dico">ⓘ</span>
+    <div>
+      <span class="dt">About these scores &amp; scales — please read</span>
+      The ratings on this dashboard blend official data with editorial estimates. <b>Headline workforce shares</b> (agriculture, manufacturing, construction, trade) come from official labour surveys; finer service-sector splits are estimates. The <b>1–5 hiring-demand scores</b>, the <b>AI-impact categories (🔴/🟠/🟢) and their 1–5 intensity</b>, the <b>growth labels</b>, the <b>salary bands</b>, and the <b>2-year forecast figures, ranges and Low/Med/High sensitivity ratings</b> are Claude's own composite judgements — synthesised from the cited sources to convey <b>relative</b> direction and magnitude, <b>not precise measurement</b>. Every scale is ordinal and indicative: a "4/5" is not twice a "2/5", and forecast percentages are scenario estimates, not predictions. Use these for comparison and discussion only — they are not statistical, financial, investment, policy or hiring advice. Verify against the primary sources in the footer before relying on any single number.
+    </div>
+  </div>
+
+  <!-- Budget & reform drivers (shown for 2-yr outlook) -->
+  <section id="driversPanel" class="drivers"></section>
+
+  <!-- Sectors render here -->
+  <div id="board"></div>
+
+  <!-- Insights -->
+  <section class="insights" id="insights">
+    <div class="icard">
+      <div class="ih">⚡ The AI surge</div>
+      <p>Globally, <span class="em">big-data specialists, fintech engineers and AI/ML specialists</span> are the three fastest-growing roles in percentage terms. Tech skills, AI and cybersecurity are projected to grow in importance faster than any other skillset by 2030.</p>
+    </div>
+    <div class="icard">
+      <div class="ih">🌐 Net +78M jobs by 2030</div>
+      <p>The WEF Future of Jobs Report models <span class="em">170M jobs created and 92M displaced</span> by 2030 — a churn of 22% of formal jobs, for a net gain of about 7%. Care, tech and green roles lead the growth.</p>
+    </div>
+    <div class="icard">
+      <div class="ih">📉 Roles in retreat</div>
+      <p>Clerical and routine roles are shrinking fastest worldwide — <span class="em">cashiers, data-entry clerks, admin secretaries, bank tellers and postal clerks</span>. The same automation pressures touch India and New Zealand.</p>
+    </div>
+  </section>
+
+  <!-- ============ WORKFORCE RESILIENCE / UPSKILLING ============ -->
+  <div class="reslab">
+    <span class="kicker">Staying ahead of the curve</span>
+    <h2>Future-proofing the workforce</h2>
+    <p>AI displaces tasks, not whole people — the workers least affected are those who move <b>up</b> the value chain (judgement, creativity, human connection) or <b>alongside</b> the technology (directing the AI rather than competing with it). Here's what the evidence says minimises AI impact.</p>
+  </div>
+
+  <section class="resstats" id="resStats"></section>
+
+  <div class="reslab" style="margin-top:8px"><h2 style="font-size:22px">Three routes to resilience</h2></div>
+  <section class="ladder" id="ladder"></section>
+
+  <div class="reslab" style="margin-top:8px"><h2 style="font-size:22px">The skills that matter most to 2030</h2>
+    <p>Per the WEF Future of Jobs 2025, the most resilient profile pairs fast-growing <b>technical</b> skills with durable <b>human</b> skills that AI can't easily replicate.</p></div>
+  <section class="skillgrid" id="skillGrid"></section>
+
+  <div class="reslab" style="margin-top:8px"><h2 style="font-size:22px">What each market should prioritise</h2></div>
+  <section class="country-tips" id="countryTips"></section>
+
+  <footer>
+    <b>How to read this:</b> Click any sector to expand its roles. Switch the metric toggle to recolour the whole board. Bars compare each market on the same scale; “—” means the metric isn’t meaningfully comparable for that market.<br><br>
+    <b>Sources &amp; methodology.</b> <span class="src">India:</span> MoSPI Periodic Labour Force Survey (PLFS) 2023–24 &amp; 2024 quarterly; Economic Survey 2024–25; EY Future of Pay 2026. <span class="src">New Zealand:</span> Stats NZ Household Labour Force Survey &amp; Employment Indicators (Dec 2025), MBIE job-vacancy data, Hays/Robert Half salary guides FY25/26. <span class="src">World:</span> ILO World Employment &amp; Social Outlook 2025; WEF Future of Jobs Report 2025; World Bank/ILO modelled estimates.<br>
+    Headline workforce shares (agriculture, manufacturing, construction, trade) are official survey figures. Finer service-sector splits, role-level pay bands and demand scores are best-estimate composites drawn from the sources above and should be treated as directional, not exact. India unemployment shown on usual-status basis (PLFS); current-weekly-status and quarterly figures run higher. Figures as of early 2026.
+  </footer>
+
+</div>
+
+<script>
+/* ============================ DATA ============================ */
+const MARKETS = {
+  india:{name:"India", flag:"🇮🇳", emp:"≈600M", stats:[
+    ["Employed workforce","≈600M"],["Labour participation","59.6%"],["Unemployment (usual status)","3.2%"],["Avg salary (mean)","₹7–9 LPA"]]},
+  nz:{name:"New Zealand", flag:"🇳🇿", emp:"2.89M", stats:[
+    ["Employed workforce","2.89M"],["Labour participation","70.5%"],["Unemployment","5.4%"],["Median salary","NZ$71.8k"]]},
+  world:{name:"World", flag:"🌍", emp:"≈3.5B", stats:[
+    ["Employed worldwide","≈3.5B"],["Global unemployment","≈5%"],["Net jobs by 2030","+78M"],["Skills changing by 2030","39%"]]}
+};
+
+/* growth: strong | grow | stable | decline ; demand 1-5 ; share = % of that market's workforce
+   salary stored as representative band + a numeric midpoint for bar scaling (india in LPA, nz in NZ$k) */
+const GROUPS = [
+ {n:"01", title:"Primary & Resources", sectors:[
+   {id:"agri", icon:"🌾", name:"Agriculture, Forestry & Fishing", tag:"Primary sector",
+     india:{share:46.1, salary:"₹1.5–3 LPA", sNum:2.2, growth:"decline", demand:3},
+     nz:{share:5.6, salary:"NZ$50–75k", sNum:62, growth:"grow", demand:4},
+     world:{share:26, salary:"—", growth:"stable", demand:3},
+     roles:[
+       {r:"Farm / field worker", t:"hot", ti:"₹1–2 LPA", tn:"NZ$48–58k"},
+       {r:"Dairy farm manager", t:"up", ti:"₹3–6 LPA", tn:"NZ$65–95k"},
+       {r:"Agronomist", t:"up", ti:"₹4–8 LPA", tn:"NZ$75–110k"},
+       {r:"Horticulturist / viticulturist", t:"up", ti:"₹2–5 LPA", tn:"NZ$55–85k"},
+       {r:"Fishery / aquaculture worker", t:"flat", ti:"₹1.5–3 LPA", tn:"NZ$50–70k"}]},
+   {id:"mine", icon:"⛏️", name:"Mining & Resources", tag:"Primary sector",
+     india:{share:0.4, salary:"₹4–10 LPA", sNum:7, growth:"stable", demand:2},
+     nz:{share:0.25, salary:"NZ$80–130k", sNum:105, growth:"stable", demand:2},
+     world:{share:1, salary:"—", growth:"stable", demand:2},
+     roles:[
+       {r:"Mining engineer", t:"flat", ti:"₹6–14 LPA", tn:"NZ$110–160k"},
+       {r:"Geologist", t:"flat", ti:"₹5–12 LPA", tn:"NZ$90–140k"},
+       {r:"Drill / plant operator", t:"flat", ti:"₹3–7 LPA", tn:"NZ$75–110k"},
+       {r:"Mine safety officer", t:"up", ti:"₹4–9 LPA", tn:"NZ$85–120k"}]},
+   {id:"energy", icon:"⚡", name:"Energy & Utilities", tag:"Primary sector",
+     india:{share:0.5, salary:"₹5–12 LPA", sNum:8, growth:"strong", demand:4},
+     nz:{share:0.7, salary:"NZ$85–130k", sNum:107, growth:"grow", demand:4},
+     world:{share:1, salary:"—", growth:"strong", demand:4},
+     roles:[
+       {r:"Renewable energy technician", t:"hot", ti:"₹3–8 LPA", tn:"NZ$70–105k"},
+       {r:"Electrical / power engineer", t:"up", ti:"₹6–14 LPA", tn:"NZ$95–140k"},
+       {r:"Grid / network operator", t:"up", ti:"₹4–10 LPA", tn:"NZ$80–120k"},
+       {r:"Energy storage specialist", t:"hot", ti:"₹7–16 LPA", tn:"NZ$100–150k"}]}
+ ]},
+ {n:"02", title:"Industrial & Built Environment", sectors:[
+   {id:"mfg", icon:"🏭", name:"Manufacturing", tag:"Secondary sector",
+     india:{share:11.4, salary:"₹3–8 LPA", sNum:5, growth:"grow", demand:4},
+     nz:{share:10, salary:"NZ$60–90k", sNum:74, growth:"stable", demand:3},
+     world:{share:14, salary:"—", growth:"decline", demand:3},
+     roles:[
+       {r:"Production / machine operator", t:"flat", ti:"₹2–4 LPA", tn:"NZ$55–70k"},
+       {r:"Mechanical engineer", t:"up", ti:"₹4–10 LPA", tn:"NZ$80–120k"},
+       {r:"Quality / process analyst", t:"up", ti:"₹3–7 LPA", tn:"NZ$65–95k"},
+       {r:"Maintenance technician", t:"up", ti:"₹3–6 LPA", tn:"NZ$70–100k"},
+       {r:"Industrial / product designer", t:"up", ti:"₹5–12 LPA", tn:"NZ$80–115k"}]},
+   {id:"const", icon:"🏗️", name:"Construction", tag:"Secondary sector",
+     india:{share:12.6, salary:"₹2.5–7 LPA", sNum:4.5, growth:"strong", demand:5},
+     nz:{share:10, salary:"NZ$65–120k", sNum:90, growth:"strong", demand:5},
+     world:{share:7, salary:"—", growth:"grow", demand:4},
+     roles:[
+       {r:"Civil / structural engineer", t:"hot", ti:"₹4–12 LPA", tn:"NZ$90–140k"},
+       {r:"Site supervisor / PM", t:"hot", ti:"₹5–15 LPA", tn:"NZ$90–140k"},
+       {r:"Electrician", t:"hot", ti:"₹2.5–6 LPA", tn:"NZ$75–120k"},
+       {r:"Plumber / gasfitter", t:"up", ti:"₹2.5–6 LPA", tn:"NZ$70–115k"},
+       {r:"Carpenter / builder", t:"up", ti:"₹2–5 LPA", tn:"NZ$65–100k"}]},
+   {id:"trans", icon:"🚚", name:"Transport & Logistics", tag:"Secondary sector",
+     india:{share:5.5, salary:"₹2.5–6 LPA", sNum:4, growth:"strong", demand:5},
+     nz:{share:5, salary:"NZ$55–85k", sNum:67, growth:"grow", demand:4},
+     world:{share:7, salary:"—", growth:"grow", demand:4},
+     roles:[
+       {r:"Delivery driver / courier", t:"hot", ti:"₹2–4 LPA", tn:"NZ$50–65k"},
+       {r:"Truck / heavy vehicle driver", t:"up", ti:"₹2.5–5 LPA", tn:"NZ$60–85k"},
+       {r:"Supply chain analyst", t:"hot", ti:"₹5–14 LPA", tn:"NZ$80–120k"},
+       {r:"Logistics coordinator", t:"up", ti:"₹3–7 LPA", tn:"NZ$60–90k"},
+       {r:"Warehouse operator", t:"flat", ti:"₹2–4 LPA", tn:"NZ$52–68k"}]}
+ ]},
+ {n:"03", title:"Consumer & Trade", sectors:[
+   {id:"retail", icon:"🛍️", name:"Retail & Wholesale Trade", tag:"Tertiary sector",
+     india:{share:12.1, salary:"₹2–5 LPA", sNum:3, growth:"stable", demand:3},
+     nz:{share:14.5, salary:"NZ$50–70k", sNum:58, growth:"stable", demand:3},
+     world:{share:14, salary:"—", growth:"stable", demand:3},
+     roles:[
+       {r:"Sales assistant", t:"flat", ti:"₹1.5–3 LPA", tn:"NZ$48–60k"},
+       {r:"Store / retail manager", t:"flat", ti:"₹3–8 LPA", tn:"NZ$60–90k"},
+       {r:"E-commerce specialist", t:"hot", ti:"₹4–12 LPA", tn:"NZ$65–100k"},
+       {r:"Merchandiser / buyer", t:"flat", ti:"₹3–7 LPA", tn:"NZ$60–85k"},
+       {r:"Cashier", t:"down", ti:"₹1.5–2.5 LPA", tn:"NZ$48–55k"}]},
+   {id:"hosp", icon:"🍽️", name:"Hospitality & Tourism", tag:"Tertiary sector",
+     india:{share:2.5, salary:"₹2–4 LPA", sNum:3, growth:"grow", demand:3},
+     nz:{share:7, salary:"NZ$50–65k", sNum:56, growth:"grow", demand:4},
+     world:{share:5, salary:"—", growth:"grow", demand:3},
+     roles:[
+       {r:"Chef / cook", t:"up", ti:"₹2.5–6 LPA", tn:"NZ$55–80k"},
+       {r:"Hotel / venue manager", t:"up", ti:"₹4–10 LPA", tn:"NZ$65–100k"},
+       {r:"Barista / front of house", t:"flat", ti:"₹1.5–3 LPA", tn:"NZ$48–58k"},
+       {r:"Tour guide / operator", t:"up", ti:"₹2–5 LPA", tn:"NZ$50–70k"}]}
+ ]},
+ {n:"04", title:"Services & Knowledge Economy", sectors:[
+   {id:"it", icon:"💻", name:"Information Technology & Digital", tag:"Quaternary sector",
+     india:{share:3, salary:"₹6–25 LPA", sNum:14, growth:"strong", demand:5},
+     nz:{share:4, salary:"NZ$105–165k", sNum:130, growth:"strong", demand:5},
+     world:{share:4, salary:"—", growth:"strong", demand:5},
+     roles:[
+       {r:"AI / ML engineer", t:"hot", ti:"₹18–35 LPA", tn:"NZ$130–200k"},
+       {r:"Software developer", t:"hot", ti:"₹6–18 LPA", tn:"NZ$100–150k"},
+       {r:"Data scientist / big-data", t:"hot", ti:"₹10–28 LPA", tn:"NZ$110–170k"},
+       {r:"Cybersecurity specialist", t:"hot", ti:"₹8–24 LPA", tn:"NZ$120–180k"},
+       {r:"Cloud / DevOps engineer", t:"hot", ti:"₹9–25 LPA", tn:"NZ$115–165k"}]},
+   {id:"fin", icon:"🏦", name:"Financial & Insurance Services", tag:"Quaternary sector",
+     india:{share:2.5, salary:"₹6–24 LPA", sNum:12, growth:"grow", demand:4},
+     nz:{share:3, salary:"NZ$90–115k", sNum:102, growth:"grow", demand:4},
+     world:{share:3, salary:"—", growth:"grow", demand:4},
+     roles:[
+       {r:"FinTech engineer", t:"hot", ti:"₹10–28 LPA", tn:"NZ$120–175k"},
+       {r:"Financial analyst", t:"up", ti:"₹5–14 LPA", tn:"NZ$85–120k"},
+       {r:"Actuary", t:"up", ti:"₹8–25 LPA", tn:"NZ$110–170k"},
+       {r:"Accountant", t:"flat", ti:"₹4–10 LPA", tn:"NZ$75–110k"},
+       {r:"Bank teller", t:"down", ti:"₹2–4 LPA", tn:"NZ$52–62k"}]},
+   {id:"health", icon:"🩺", name:"Healthcare & Social Assistance", tag:"Quaternary sector",
+     india:{share:4, salary:"₹3–20 LPA", sNum:9, growth:"strong", demand:5},
+     nz:{share:11, salary:"NZ$80–120k", sNum:100, growth:"strong", demand:5},
+     world:{share:12, salary:"—", growth:"strong", demand:5},
+     roles:[
+       {r:"Registered nurse", t:"hot", ti:"₹3–8 LPA", tn:"NZ$80–110k"},
+       {r:"Doctor / GP", t:"hot", ti:"₹8–30 LPA", tn:"NZ$150–250k"},
+       {r:"Aged / disability care worker", t:"hot", ti:"₹2–4 LPA", tn:"NZ$55–70k"},
+       {r:"Allied health (physio, etc.)", t:"up", ti:"₹3–10 LPA", tn:"NZ$75–115k"},
+       {r:"Pharmacist", t:"up", ti:"₹3–9 LPA", tn:"NZ$80–120k"}]},
+   {id:"edu", icon:"🎓", name:"Education & Training", tag:"Quaternary sector",
+     india:{share:3.5, salary:"₹3–9 LPA", sNum:5, growth:"grow", demand:4},
+     nz:{share:9, salary:"NZ$70–95k", sNum:82, growth:"grow", demand:4},
+     world:{share:5, salary:"—", growth:"grow", demand:4},
+     roles:[
+       {r:"School teacher", t:"up", ti:"₹3–7 LPA", tn:"NZ$70–95k"},
+       {r:"University lecturer", t:"flat", ti:"₹6–15 LPA", tn:"NZ$90–140k"},
+       {r:"EdTech / e-learning specialist", t:"hot", ti:"₹4–12 LPA", tn:"NZ$75–110k"},
+       {r:"Trainer / instructional designer", t:"up", ti:"₹4–10 LPA", tn:"NZ$70–100k"}]},
+   {id:"prof", icon:"📊", name:"Professional & Business Services", tag:"Quaternary sector",
+     india:{share:2, salary:"₹5–18 LPA", sNum:10, growth:"grow", demand:4},
+     nz:{share:9.5, salary:"NZ$85–130k", sNum:107, growth:"grow", demand:4},
+     world:{share:7, salary:"—", growth:"grow", demand:4},
+     roles:[
+       {r:"Management consultant", t:"up", ti:"₹8–25 LPA", tn:"NZ$100–160k"},
+       {r:"Lawyer", t:"flat", ti:"₹5–20 LPA", tn:"NZ$90–160k"},
+       {r:"Marketing / brand manager", t:"up", ti:"₹5–16 LPA", tn:"NZ$85–130k"},
+       {r:"HR / people specialist", t:"flat", ti:"₹4–12 LPA", tn:"NZ$75–115k"},
+       {r:"Architect", t:"up", ti:"₹4–14 LPA", tn:"NZ$85–135k"}]},
+   {id:"gov", icon:"🏛️", name:"Public Administration & Government", tag:"Quaternary sector",
+     india:{share:2, salary:"₹4–12 LPA", sNum:7, growth:"stable", demand:3},
+     nz:{share:6, salary:"NZ$75–105k", sNum:90, growth:"stable", demand:3},
+     world:{share:5, salary:"—", growth:"stable", demand:3},
+     roles:[
+       {r:"Policy analyst", t:"flat", ti:"₹6–14 LPA", tn:"NZ$85–120k"},
+       {r:"Civil servant / administrator", t:"flat", ti:"₹4–10 LPA", tn:"NZ$70–100k"},
+       {r:"Police / defence", t:"up", ti:"₹4–9 LPA", tn:"NZ$70–105k"},
+       {r:"Public health official", t:"up", ti:"₹5–12 LPA", tn:"NZ$80–115k"}]},
+   {id:"media", icon:"🎬", name:"Media, Arts & Telecommunications", tag:"Quaternary sector",
+     india:{share:1, salary:"₹3–12 LPA", sNum:6, growth:"stable", demand:3},
+     nz:{share:3.5, salary:"NZ$60–95k", sNum:75, growth:"decline", demand:2},
+     world:{share:3, salary:"—", growth:"stable", demand:3},
+     roles:[
+       {r:"Telecom / network engineer", t:"up", ti:"₹5–14 LPA", tn:"NZ$90–130k"},
+       {r:"Content creator / digital", t:"hot", ti:"₹3–12 LPA", tn:"NZ$60–100k"},
+       {r:"UX / graphic designer", t:"up", ti:"₹4–14 LPA", tn:"NZ$70–115k"},
+       {r:"Journalist / editor", t:"down", ti:"₹3–9 LPA", tn:"NZ$60–90k"},
+       {r:"Producer / broadcast", t:"flat", ti:"₹4–12 LPA", tn:"NZ$65–100k"}]}
+ ]}
+];
+
+/* ===================== AI IMPACT (per sector, per market) =====================
+   cat: 'displace' (🔴 disruptive / job-loss risk) | 'augment' (🟠 productivity gains,
+   can improve with AI) | 'low' (🟢 minimally affected).  lvl = intensity 1–5. */
+const AI_IMPACT = {
+ agri:{
+   india:{cat:"low",lvl:1,note:"India's vast manual and smallholder farm workforce has minimal direct GenAI exposure; meaningful impact is decades away."},
+   nz:{cat:"low",lvl:2,note:"Largely shielded; precision-agriculture and farm-management AI augment a small skilled layer."},
+   world:{cat:"low",lvl:1,note:"Outdoor, physical work — among the least AI-exposed sectors on earth."}},
+ mine:{
+   india:{cat:"low",lvl:1,note:"Manual and field roles largely unaffected; automation limited to a few large operators."},
+   nz:{cat:"augment",lvl:2,note:"Autonomous equipment and predictive maintenance augment a small specialist workforce."},
+   world:{cat:"low",lvl:2,note:"Mostly augmentation of planning and safety; core extraction stays physical."}},
+ energy:{
+   india:{cat:"augment",lvl:3,note:"AI optimises grids and accelerates the renewables rollout — net positive, expanding skilled roles."},
+   nz:{cat:"augment",lvl:3,note:"Smart-grid forecasting and predictive maintenance make technical roles more productive."},
+   world:{cat:"augment",lvl:3,note:"A growth area: AI speeds the energy transition and creates new technical roles."}},
+ mfg:{
+   india:{cat:"augment",lvl:3,note:"AI and robotics reshape lines — routine operator roles squeezed, engineering and quality augmented. Net growth as India industrialises."},
+   nz:{cat:"augment",lvl:2,note:"Automation augments a mature base; some routine line roles consolidate."},
+   world:{cat:"augment",lvl:3,note:"Robots displace some line work, but AI augments design, quality and maintenance."}},
+ const:{
+   india:{cat:"low",lvl:1,note:"On-site physical trades are very hard to automate; AI only touches design and planning."},
+   nz:{cat:"low",lvl:2,note:"Trades and site work shielded; AI augments BIM, estimating and project planning."},
+   world:{cat:"low",lvl:2,note:"One of the safest sectors — manual, context-rich work resists automation."}},
+ trans:{
+   india:{cat:"augment",lvl:3,note:"AI optimises routing and supply chains; delivery and driving roles are still growing near-term."},
+   nz:{cat:"augment",lvl:3,note:"Fleet and logistics AI augment operations; autonomous driving is a long-term watch-item."},
+   world:{cat:"augment",lvl:3,note:"Strong logistics augmentation; autonomous vehicles pose a longer-horizon risk to drivers."}},
+ retail:{
+   india:{cat:"augment",lvl:2,note:"Largely informal, in-person retail automates slowly; AI augments e-commerce and inventory."},
+   nz:{cat:"displace",lvl:4,note:"Self-checkout, automated inventory and AI customer service erode cashier and routine sales roles."},
+   world:{cat:"displace",lvl:4,note:"Cashiers and routine sales clerks are among the fastest-declining roles worldwide."}},
+ hosp:{
+   india:{cat:"low",lvl:2,note:"Human-facing service work; AI mainly augments bookings and back-office."},
+   nz:{cat:"low",lvl:2,note:"People-centric and physical — low direct exposure; AI helps with ops and scheduling."},
+   world:{cat:"low",lvl:2,note:"Service and experience roles stay human; modest back-office augmentation."}},
+ it:{
+   india:{cat:"displace",lvl:5,note:"India's IT-services and BPO pyramid is the most AI-exposed in the world — AI compresses entry-level coding, testing and back-office headcount even as high-end AI roles boom."},
+   nz:{cat:"augment",lvl:4,note:"Developers and analysts become far more productive; demand for AI, data and security skills rises sharply."},
+   world:{cat:"augment",lvl:4,note:"The epicentre of growth — AI/ML, data and security roles lead global job creation while routine coding and QA are automated."}},
+ fin:{
+   india:{cat:"displace",lvl:4,note:"Large BFSI back-office and processing operations are highly exposed; analyst and advisory roles are augmented."},
+   nz:{cat:"augment",lvl:3,note:"AI augments analysis, risk and advisory; transactional and teller roles decline."},
+   world:{cat:"augment",lvl:4,note:"Finance is among the most AI-exposed cognitive sectors — heavy augmentation plus clerical displacement."}},
+ health:{
+   india:{cat:"augment",lvl:3,note:"AI augments diagnostics, imaging and admin; hands-on care stays human and in high demand."},
+   nz:{cat:"augment",lvl:3,note:"Documentation, triage and diagnostics augmented; clinical and care roles remain human-led and growing."},
+   world:{cat:"augment",lvl:3,note:"Strong augmentation of diagnostics and admin; care work is resilient and expanding."}},
+ edu:{
+   india:{cat:"augment",lvl:3,note:"AI tutoring and content scale learning; teaching stays human while admin and content roles shift."},
+   nz:{cat:"augment",lvl:3,note:"AI augments lesson design, marking and tutoring; classroom teaching remains human-led."},
+   world:{cat:"augment",lvl:3,note:"Cognitive exposure is high, but teaching is augmented rather than replaced."}},
+ prof:{
+   india:{cat:"displace",lvl:4,note:"KPO, back-office, paralegal and bookkeeping work is highly exposed; high-end consulting and advisory are augmented."},
+   nz:{cat:"augment",lvl:4,note:"Consulting, legal and marketing augmented; routine admin, secretarial and bookkeeping roles decline."},
+   world:{cat:"augment",lvl:4,note:"Highly exposed knowledge work — strong augmentation at the top, clerical displacement below."}},
+ gov:{
+   india:{cat:"augment",lvl:2,note:"AI augments service delivery and records; large administrative cadres face gradual change."},
+   nz:{cat:"augment",lvl:3,note:"Public-sector analysis and admin augmented; routine processing roles consolidate."},
+   world:{cat:"augment",lvl:3,note:"Administrative and policy work augmented; routine clerical processing is exposed."}},
+ media:{
+   india:{cat:"augment",lvl:3,note:"AI accelerates content and design and telecom engineering grows, while routine production and journalism are squeezed."},
+   nz:{cat:"displace",lvl:3,note:"An already-shrinking media sector faces further pressure as AI automates content and routine production."},
+   world:{cat:"augment",lvl:3,note:"Content creation is augmented and reshaped; routine writing, editing and production roles decline."}}
+};
+const AICAT = {
+  displace:{fg:"var(--ai-red)",    bar:"linear-gradient(90deg,#C0392B,#d65a47)", short:"🔴 Disruptive", label:"Disruptive",  chip:"ai-red"},
+  augment: {fg:"var(--ai-orange)", bar:"linear-gradient(90deg,#CF7A22,#e09b4c)", short:"🟠 Augmented",  label:"Augmented",   chip:"ai-orange"},
+  low:     {fg:"var(--ai-green)",  bar:"linear-gradient(90deg,#3F7A4F,#5f9a6c)", short:"🟢 Low impact",label:"Low impact",  chip:"ai-green"}
+};
+const FLAGS = {india:"🇮🇳", nz:"🇳🇿", world:"🌍"};
+const CNAMES = {india:"India", nz:"New Zealand", world:"World"};
+
+/* ===================== 2-YEAR OUTLOOK (2026 → 2028) =====================
+   base = central 2-yr cumulative employment-growth estimate (%); lo/hi = sensitivity
+   band (pessimistic → optimistic); sens = how policy/shock-dependent the outcome is.
+   Grounded in India Union Budget 2026-27, NZ Budget 2026, and ILO/WEF global outlook. */
+const DMIN=-8, DMAX=28;
+const OUTLOOK = {
+ agri:{ india:{base:2,lo:-1,hi:5,sens:"Med",driver:"'Bharat-VISTAAR' AI farm advisory, fisheries reservoirs and livestock-credit support productivity; employment share keeps slowly declining as workers shift out."},
+        nz:{base:4,lo:1,hi:7,sens:"Med",driver:"Export-led recovery, dairy/horticulture demand and reopened seasonal-visa channels lift hiring."},
+        world:{base:1,lo:-2,hi:3,sens:"Med",driver:"Green transition reshapes farm labour; modest net change globally."}},
+ mine:{ india:{base:3,lo:0,hi:6,sens:"Med",driver:"Rare-earth and critical-minerals self-reliance push in Budget 2026-27 supports new capacity."},
+        nz:{base:1,lo:-2,hi:3,sens:"Med",driver:"Stable; limited new permitting and a small workforce."},
+        world:{base:1,lo:-2,hi:4,sens:"High",driver:"Highly commodity-cycle and energy-transition dependent."}},
+ energy:{ india:{base:8,lo:4,hi:13,sens:"Med",driver:"Electronics Component scheme raised to ₹40,000 cr and a strong renewables build-out expand skilled roles."},
+        nz:{base:6,lo:2,hi:9,sens:"Med",driver:"Budget 2026 energy-security and gas-transition reforms grow the sector."},
+        world:{base:7,lo:3,hi:12,sens:"Med",driver:"The energy transition is among the leading global job creators."}},
+ mfg:{ india:{base:7,lo:3,hi:12,sens:"High",driver:"Manufacturing is the Budget's 'heartbeat' — PLI, semiconductors, textiles, the ₹10,000 cr SME Growth Fund and new FTAs. Execution and global trade are the swing factors."},
+        nz:{base:2,lo:-1,hi:4,sens:"Med",driver:"Mature base; modest gains tied to the export recovery."},
+        world:{base:0,lo:-3,hi:3,sens:"High",driver:"Automation and trade frictions cap net manufacturing employment."}},
+ const:{ india:{base:9,lo:5,hi:14,sens:"Med",driver:"Record ₹12.2 lakh-cr capex, seven high-speed-rail corridors and City Economic Regions drive heavy construction hiring."},
+        nz:{base:8,lo:3,hi:12,sens:"Med",driver:"Capital allowance lifted to $5.7b — hospitals, schools, highways, rail. The Infrastructure Commission counts ~4,500 jobs per $1bn spent; RMA replacement unlocks building."},
+        world:{base:4,lo:1,hi:7,sens:"Med",driver:"Infrastructure and housing demand support steady growth."}},
+ trans:{ india:{base:6,lo:3,hi:10,sens:"Med",driver:"E-commerce, logistics corridors and rail expansion lift transport jobs."},
+        nz:{base:4,lo:1,hi:7,sens:"Med",driver:"The infrastructure pipeline and freight recovery support hiring."},
+        world:{base:3,lo:0,hi:6,sens:"Med",driver:"Logistics growth tempered by longer-run driving automation."}},
+ retail:{ india:{base:4,lo:1,hi:7,sens:"Med",driver:"Income-tax relief and household purchasing-power measures lift consumption and retail employment."},
+        nz:{base:1,lo:-2,hi:3,sens:"High",driver:"Cost-of-living pressure and automation weigh; highly sensitive to the consumer recovery."},
+        world:{base:0,lo:-3,hi:2,sens:"High",driver:"Automation displaces routine roles; net roughly flat."}},
+ hosp:{ india:{base:5,lo:2,hi:8,sens:"Med",driver:"Five regional medical-tourism hubs, domestic travel and rising incomes support hospitality."},
+        nz:{base:5,lo:1,hi:9,sens:"High",driver:"Tourism recovery is the key driver — exposed to global travel and fuel-price shocks."},
+        world:{base:3,lo:0,hi:6,sens:"Med",driver:"Travel recovery continues, unevenly across regions."}},
+ it:{ india:{base:5,lo:-3,hi:12,sens:"High",driver:"The biggest swing factor of all: AI creates high-end roles while compressing the IT-services/BPO entry pyramid. Outcome hinges on AI displacement speed vs GCC and AI-talent growth."},
+        nz:{base:6,lo:2,hi:10,sens:"Med",driver:"Strong demand for AI, data and cybersecurity skills lifts tech employment."},
+        world:{base:8,lo:3,hi:14,sens:"Med",driver:"AI/ML, data and security roles lead global job creation."}},
+ fin:{ india:{base:4,lo:0,hi:8,sens:"High",driver:"'Banking for Viksit Bharat' reforms expand finance, but AI automates large back-office operations."},
+        nz:{base:3,lo:0,hi:6,sens:"Med",driver:"Fintech and advisory grow; transactional and teller roles shrink."},
+        world:{base:4,lo:1,hi:8,sens:"Med",driver:"Augmentation plus fintech growth, offset by clerical decline."}},
+ health:{ india:{base:6,lo:3,hi:10,sens:"Low",driver:"Five regional medical hubs, expanded capacity and ageing demand — resilient, low-sensitivity growth."},
+        nz:{base:6,lo:3,hi:9,sens:"Low",driver:"Budget 2026 lifts health funding; an ageing population guarantees demand."},
+        world:{base:7,lo:4,hi:11,sens:"Low",driver:"Care work is among the most reliable global growth areas."}},
+ edu:{ india:{base:5,lo:2,hi:8,sens:"Med",driver:"University townships in industrial corridors, skilling/apprenticeships and creative-tech labs expand education roles."},
+        nz:{base:3,lo:0,hi:6,sens:"Low",driver:"Budget increases education funding; steady underlying demand."},
+        world:{base:4,lo:1,hi:7,sens:"Low",driver:"Steady, increasingly augmented by EdTech."}},
+ prof:{ india:{base:5,lo:1,hi:9,sens:"High",driver:"The services-sector push and ease-of-doing-business reforms lift demand, but KPO/back-office work is highly AI-exposed."},
+        nz:{base:4,lo:1,hi:7,sens:"Med",driver:"Professional services grow with the recovery; routine admin declines."},
+        world:{base:5,lo:1,hi:9,sens:"Med",driver:"Knowledge-work demand rises while clerical layers thin out."}},
+ gov:{ india:{base:2,lo:0,hi:4,sens:"Low",driver:"Stable public employment with a digital-governance efficiency drive."},
+        nz:{base:1,lo:-2,hi:3,sens:"Med",driver:"A lean $2.1b operating allowance and public-service restraint cap growth."},
+        world:{base:2,lo:0,hi:4,sens:"Low",driver:"Generally stable public administration."}},
+ media:{ india:{base:4,lo:0,hi:8,sens:"High",driver:"Creative-tech labs and telecom growth against AI-driven content automation."},
+        nz:{base:-1,lo:-4,hi:2,sens:"High",driver:"Structural media decline continues; AI adds further pressure."},
+        world:{base:2,lo:-2,hi:5,sens:"High",driver:"Telecom and digital up, traditional media down — a wide range."}}
+};
+
+/* ============================ HELPERS ============================ */
+const GROWTH = {
+  strong:{cls:"g-strong", label:"Strong growth", f:"▲▲"},
+  grow:{cls:"g-grow", label:"Growing", f:"▲"},
+  stable:{cls:"g-stable", label:"Stable", f:"●"},
+  decline:{cls:"g-decline", label:"Declining", f:"▼"}
+};
+const GVAL = {strong:95, grow:72, stable:48, decline:22};
+const TREND = {
+  hot:{cls:"t-hot",label:"🔥 In demand"},
+  up:{cls:"t-up",label:"↑ Growing"},
+  flat:{cls:"t-flat",label:"→ Stable"},
+  down:{cls:"t-down",label:"↓ Declining"}
+};
+const NOTES = {
+  share:"<b>Workforce size</b> — each bar shows the sector’s share of that market’s total workforce. Note India’s economy is still anchored by agriculture (≈46%), while New Zealand and the world are services-led. <i class='cav'>Major-sector shares are official survey data; finer splits are estimates.</i>",
+  growth:"<b>Growth outlook to 2030</b> — directional trend per market, informed by WEF Future of Jobs and national vacancy data. Tech, care, construction and green energy lead; clerical and routine roles decline. <i class='cav'>Directional labels, not measured rates.</i>",
+  salary:"<b>Salary</b> — representative pay bands. India shown in ₹ lakh per annum (LPA); New Zealand in NZ$ thousands. Bars are scaled within each market, so India and NZ are <i>not</i> directly comparable in absolute terms. <i class='cav'>Representative bands, not survey averages — actual pay varies widely by role, employer and city.</i>",
+  demand:"<b>Hiring demand</b> — relative intensity of current hiring need (1–5). Reflects skills shortages and vacancy growth: construction, IT, healthcare and logistics run hottest in both India and New Zealand. <i class='cav'>The 1–5 scale is an ordinal composite, not an official measure.</i>",
+  ai:"<b>AI impact</b> — how generative AI is reshaping each sector, by market. <span class='ai-chip ai-red'>🔴 Disruptive</span> = job-displacement risk · <span class='ai-chip ai-orange'>🟠 Augmented</span> = productivity gains, can improve with AI · <span class='ai-chip ai-green'>🟢 Low impact</span> = minimally affected. Bar length = intensity (1–5). India's farm-heavy base keeps national exposure low, but its IT-services and back-office work is the most exposed in the world. Expand any sector for the country breakdown. <i class='cav'>Categories and 1–5 intensity are indicative composites, not measured exposure rates.</i>",
+  outlook:"<b>2-year outlook · 2026→2028</b> — projected change in employment by sector, grounded in each country's latest budget and reforms (see the cards below). The shaded <b>band is the sensitivity range</b> (pessimistic → optimistic); a <b>wider band = more sensitive</b> to policy execution and global shocks. The vertical line marks zero; the solid tick is the base case. Expand any sector for the country-by-country rationale. <i class='cav'>Scenario estimates, not predictions — figures and sensitivity ratings are illustrative.</i>"
+};
+
+const maxShareI = Math.max(...GROUPS.flatMap(g=>g.sectors.map(s=>s.india.share)));
+const maxShareN = Math.max(...GROUPS.flatMap(g=>g.sectors.map(s=>s.nz.share)));
+const maxShareW = Math.max(...GROUPS.flatMap(g=>g.sectors.map(s=>s.world.share)));
+const maxSalI = Math.max(...GROUPS.flatMap(g=>g.sectors.map(s=>s.india.sNum)));
+const maxSalN = Math.max(...GROUPS.flatMap(g=>g.sectors.map(s=>s.nz.sNum)));
+
+let metric = "share";
+
+/* ============================ RENDER ============================ */
+/* live overrides populated by loadLiveData(); falls back to MARKETS.stats */
+let LIVE_DATA = {india:null, nz:null, world:null};
+let LIVE_STATE = "loading"; // loading | live | stale
+
+function renderMacro(){
+  document.getElementById('macro').innerHTML = Object.entries(MARKETS).map(([k,m])=>{
+    const live = LIVE_DATA[k];
+    const rows = live
+      ? [["Employed workforce", m.emp], ...live.rows]
+      : m.stats;
+    let badge;
+    if(LIVE_STATE==="loading") badge = `<div class="livebadge"><span class="livedot stale"></span>Fetching live data…</div>`;
+    else if(live) badge = `<div class="livebadge"><span class="livedot"></span>Live · World Bank · ${live.year}</div>`;
+    else badge = `<div class="livebadge"><span class="livedot stale"></span>Curated estimates · live feed unavailable</div>`;
+    return `<div class="mcard ${k}">
+      <h3><span class="flag">${m.flag}</span>${m.name}</h3>
+      <div class="sub">${live? "Latest official data" : "Snapshot · early 2026"}</div>
+      ${rows.map(s=>`<div class="mstat"><span>${s[0]}</span><b>${s[1]}</b></div>`).join('')}
+      ${badge}
+    </div>`;
+  }).join('');
+}
+
+/* ---------- Live data: World Bank Indicators API (free, no key, browser-direct) ---------- */
+const WB_ISO = {india:"IND", nz:"NZL", world:"WLD"};
+const WB_INDICATORS = [
+  {code:"SL.TLF.CACT.ZS",   label:"Labour participation", fmt:v=>v.toFixed(1)+"%"},
+  {code:"SL.UEM.TOTL.ZS",   label:"Unemployment",         fmt:v=>v.toFixed(1)+"%"},
+  {code:"NY.GDP.MKTP.KD.ZG",label:"Real GDP growth",      fmt:v=>(v>0?"+":"")+v.toFixed(1)+"%"}
+];
+
+async function wbFetch(iso, code){
+  const url = `https://api.worldbank.org/v2/country/${iso}/indicator/${code}?format=json&mrv=6&per_page=10`;
+  const r = await fetch(url);
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j = await r.json();
+  const rows = Array.isArray(j) ? j[1] : null;
+  const hit = (rows||[]).find(d=>d.value!==null && d.value!==undefined);
+  if(!hit) throw new Error("no value");
+  return {value:hit.value, year:hit.date};
+}
+
+async function loadLiveData(){
+  try{
+    const markets = Object.keys(WB_ISO);
+    const all = await Promise.all(markets.map(async k=>{
+      const res = await Promise.allSettled(
+        WB_INDICATORS.map(ind => wbFetch(WB_ISO[k], ind.code))
+      );
+      const rows=[]; let latestYear=0;
+      res.forEach((r,i)=>{
+        if(r.status==="fulfilled"){
+          rows.push([WB_INDICATORS[i].label, WB_INDICATORS[i].fmt(r.value.value)]);
+          latestYear = Math.max(latestYear, parseInt(r.value.year)||0);
+        }
+      });
+      return {k, rows, year:latestYear};
+    }));
+    let any=false;
+    all.forEach(m=>{ if(m.rows.length){ LIVE_DATA[m.k]={rows:m.rows, year:m.year}; any=true; }});
+    LIVE_STATE = any ? "live" : "stale";
+  }catch(e){
+    LIVE_STATE = "stale";
+  }
+  renderMacro();
+}
+
+function barRow(letter,cls,pct,valText){
+  return `<div class="bar"><span class="blab">${letter}</span>
+    <div class="track"><div class="fill ${cls}" style="width:${Math.max(0,Math.min(100,pct))}%"></div></div>
+    <span class="bval">${valText}</span></div>`;
+}
+
+function sectorSummary(s){
+  if(metric==="share"){
+    return `<div class="bars">
+      ${barRow("IN","i", s.india.share/maxShareI*100, s.india.share+"%")}
+      ${barRow("NZ","n", s.nz.share/maxShareN*100, s.nz.share+"%")}
+      ${barRow("WD","w", s.world.share/maxShareW*100, s.world.share+"%")}
+    </div>`;
+  }
+  if(metric==="growth"){
+    const mk=(m,letter,cls)=>{const g=GROWTH[m.growth];return barRow(letter,cls,GVAL[m.growth],g.f+" "+g.label);};
+    return `<div class="bars">
+      ${mk(s.india,"IN","i")}${mk(s.nz,"NZ","n")}${mk(s.world,"WD","w")}
+    </div>`;
+  }
+  if(metric==="salary"){
+    return `<div class="bars">
+      ${barRow("IN","i", s.india.sNum/maxSalI*100, s.india.salary)}
+      ${barRow("NZ","n", s.nz.sNum/maxSalN*100, s.nz.salary)}
+      <div class="bar"><span class="blab">WD</span><div class="track"></div><span class="bval" style="color:var(--ink-soft)">varies</span></div>
+    </div>`;
+  }
+  if(metric==="ai"){
+    const ai=AI_IMPACT[s.id];
+    const row=(m,letter)=>{const c=AICAT[m.cat];return `<div class="bar"><span class="blab">${letter}</span>
+      <div class="track"><div class="fill" style="width:${m.lvl/5*100}%;background:${c.bar}"></div></div>
+      <span class="bval" style="color:${c.fg}">${c.short}</span></div>`;};
+    return `<div class="bars">${row(ai.india,"IN")}${row(ai.nz,"NZ")}${row(ai.world,"WD")}</div>`;
+  }
+  if(metric==="outlook"){
+    const o=OUTLOOK[s.id];
+    const map=v=>(v-DMIN)/(DMAX-DMIN)*100;
+    const rng=(m,letter,cls)=>{
+      const lo=Math.max(0,map(m.lo)), hi=Math.min(100,map(m.hi));
+      return `<div class="bar" title="Base ${m.base>0?'+':''}${m.base}% · range ${m.lo}…${m.hi}% · ${m.sens} sensitivity">
+        <span class="blab">${letter}</span>
+        <div class="track rng">
+          <div class="zero" style="left:${map(0)}%"></div>
+          <div class="band ${cls}" style="left:${lo}%;width:${Math.max(2,hi-lo)}%"></div>
+          <div class="basept ${cls}" style="left:${Math.max(0,Math.min(100,map(m.base)))}%"></div>
+        </div>
+        <span class="bval">${m.base>0?'+':''}${m.base}%</span></div>`;};
+    return `<div class="bars">${rng(o.india,"IN","i")}${rng(o.nz,"NZ","n")}${rng(o.world,"WD","w")}</div>`;
+  }
+  // demand
+  const dd=(m,cls)=>`<div class="demand">${[1,2,3,4,5].map(i=>`<span class="ddot ${i<=m.demand?'on '+cls:''}"></span>`).join('')}</div>`;
+  return `<div class="bars">
+    <div class="bar"><span class="blab">IN</span>${dd(s.india,'i')}<span class="bval">${s.india.demand}/5</span></div>
+    <div class="bar"><span class="blab">NZ</span>${dd(s.nz,'n')}<span class="bval">${s.nz.demand}/5</span></div>
+    <div class="bar"><span class="blab">WD</span>${dd(s.world,'w')}<span class="bval">${s.world.demand}/5</span></div>
+  </div>`;
+}
+
+function sectorScore(s){
+  if(metric==="share") return {big:s.india.share+"%", cap:"India share"};
+  if(metric==="growth"){const g=GROWTH[s.world.growth];return {big:g.f, cap:"World trend"};}
+  if(metric==="salary") return {big:s.nz.salary.replace('NZ$','$').split('–')[0]+"+", cap:"NZ entry"};
+  if(metric==="ai"){const ic=AICAT[AI_IMPACT[s.id].india.cat];return {big:ic.short.split(' ')[0], cap:"India · AI"};}
+  if(metric==="outlook"){const b=OUTLOOK[s.id].india.base;return {big:(b>0?'+':'')+b+'%', cap:"India 2-yr"};}
+  return {big:Math.max(s.india.demand,s.nz.demand,s.world.demand)+"/5", cap:"Peak demand"};
+}
+
+function aiPanel(s){
+  const ai=AI_IMPACT[s.id];
+  return `<div class="ai-panel">
+    <div class="roles-head">🤖 AI impact by market — how it lands here</div>
+    ${['india','nz','world'].map(k=>{const m=ai[k];const c=AICAT[m.cat];return `
+      <div class="ai-row">
+        <span class="ai-flag">${FLAGS[k]}</span>
+        <div><span class="ai-cname">${CNAMES[k]}</span>
+          <span class="ai-badge ${c.chip}">${c.short} · ${m.lvl}/5</span></div>
+        <span class="ai-note">${m.note}</span>
+      </div>`;}).join('')}
+  </div>`;
+}
+
+function outlookPanel(s){
+  const o=OUTLOOK[s.id];
+  const col={india:["var(--india-soft)","var(--india)"],nz:["var(--nz-soft)","var(--nz)"],world:["var(--world-soft)","var(--world)"]};
+  return `<div class="ai-panel">
+    <div class="roles-head">📈 2-year outlook (2026→2028) — base case, range &amp; sensitivity</div>
+    ${['india','nz','world'].map(k=>{const m=o[k];const c=col[k];return `
+      <div class="ai-row">
+        <span class="ai-flag">${FLAGS[k]}</span>
+        <div><span class="ai-cname">${CNAMES[k]} · employment</span>
+          <span class="ai-badge" style="background:${c[0]};color:${c[1]}">${m.base>0?'+':''}${m.base}% · range ${m.lo>0?'+':''}${m.lo}…${m.hi>0?'+':''}${m.hi}%</span>
+          <span class="sens sens-${m.sens}" style="margin-left:6px">${m.sens} sensitivity</span></div>
+        <span class="ai-note">${m.driver}</span>
+      </div>`;}).join('')}
+  </div>`;
+}
+
+function rolesTable(s){
+  return `<div class="roles">
+    ${aiPanel(s)}
+    ${outlookPanel(s)}
+    <div class="roles-head">Roles within this sector · pay & trajectory</div>
+    <table class="rtable">
+      <thead><tr><th>Role</th><th>Trajectory</th><th class="r">India (LPA)</th><th class="r">NZ (NZD)</th></tr></thead>
+      <tbody>
+      ${s.roles.map(r=>{const t=TREND[r.t];return `<tr>
+        <td class="rname">${r.r}</td>
+        <td><span class="rtrend ${t.cls}">${t.label}</span></td>
+        <td class="r rsalary-i">${r.ti}</td>
+        <td class="r rsalary-n">${r.tn}</td>
+      </tr>`;}).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderDrivers(){
+  const D={
+    india:{macro:"Union Budget 2026–27 · real GDP ≈7% (nominal ≈10%)",
+      body:"Theme <b>'Yuva Shakti'</b>. Record ₹12.2 lakh-crore capex; manufacturing push (semiconductors, textiles, rare earths; electronics scheme raised to ₹40,000 cr); ₹10,000 cr SME Growth Fund; City Economic Regions; seven high-speed-rail corridors; large skilling/apprenticeship and services-sector reforms; new Income-Tax Act from April 2026. Construction, manufacturing, energy and services hire fastest.",
+      src:"MoSPI · Budget 2026-27"},
+    nz:{macro:"Budget 2026 · GDP ≈2.7%/yr · unemployment 5.5%→4.3%",
+      body:"A <b>'responsible' consolidation</b> Budget. Capital allowance lifted to $5.7b for job-rich infrastructure — hospitals, schools, highways and rail (~4,500 jobs per $1bn) — plus RMA/planning replacement, housing-growth incentives and energy-security reforms, with more health and education funding. Construction, health and energy lead; downside risk from global shocks and fuel prices.",
+      src:"NZ Treasury · Budget 2026"},
+    world:{macro:"Global · growth slowing amid geopolitical uncertainty",
+      body:"Growth is slowing on geopolitical and trade strain, and the ILO <b>downgraded its 2025 job forecast by up to 7 million</b>. Net hiring continues — led by AI/tech, care and the green transition — with augmentation outpacing outright automation while routine clerical roles keep shrinking.",
+      src:"ILO · WEF 2025"}
+  };
+  document.getElementById('driversPanel').innerHTML = ['india','nz','world'].map(k=>{const d=D[k];return `
+    <div class="dcard ${k}"><h4>${FLAGS[k]} ${CNAMES[k]}</h4>
+      <div class="dmacro">${d.macro}</div><p>${d.body}</p><span class="src">${d.src}</span></div>`;}).join('');
+}
+
+function renderBoard(){
+  document.getElementById('metricNote').innerHTML = NOTES[metric];
+  document.getElementById('driversPanel').classList.toggle('show', metric==='outlook');
+  document.getElementById('board').innerHTML = GROUPS.map(g=>`
+    <div class="group">
+      <div class="group-head"><span class="gnum">${g.n}</span><h2>${g.title}</h2><span class="gline"></span></div>
+      ${g.sectors.map(s=>{
+        const sc=sectorScore(s);
+        return `<div class="sector" data-id="${s.id}">
+          <div class="srow" onclick="toggle('${s.id}')">
+            <span class="chev">▶</span>
+            <div><div class="sname"><span class="micon">${s.icon}</span>${s.name}</div><div class="stag">${s.tag}</div></div>
+            ${sectorSummary(s)}
+            <div class="score"><div class="big">${sc.big}</div><div class="cap">${sc.cap}</div></div>
+          </div>
+          ${rolesTable(s)}
+        </div>`;
+      }).join('')}
+    </div>`).join('');
+}
+
+window.toggle = function(id){
+  const el=document.querySelector(`.sector[data-id="${id}"]`);
+  el.classList.toggle('open');
+};
+
+document.getElementById('metricSeg').addEventListener('click', e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#metricSeg button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  metric = e.target.dataset.metric;
+  // preserve which sectors are open
+  const open=[...document.querySelectorAll('.sector.open')].map(s=>s.dataset.id);
+  renderBoard();
+  open.forEach(id=>document.querySelector(`.sector[data-id="${id}"]`)?.classList.add('open'));
+});
+
+renderMacro();
+renderDrivers();
+renderBoard();
+loadLiveData();   // fetch live World Bank figures, then re-render macro cards
+
+/* ===================== WORKFORCE RESILIENCE ===================== */
+const RES_STATS = [
+  {num:"39%", lab:"of core job skills will change by 2030 (down from 44% in 2023 as reskilling ramps up)"},
+  {num:"59%", lab:"of workers will need reskilling or upskilling by 2030 — 11% may not get access to it"},
+  {num:"85%", lab:"of employers plan to upskill their workforce in response to the skills gap"},
+  {num:"+78M", lab:"net new jobs by 2030 — 170M created, 92M displaced. The shift rewards the reskilled"}
+];
+const LADDER = [
+  {cls:"t1", tier:"Route 1 · least exposed", icon:"🛡️", title:"Move toward human-centred work",
+   desc:"Tasks rooted in empathy, physical dexterity and trust are hardest to automate.",
+   items:["<b>Care & health</b> — nursing, aged care, allied health, counselling","<b>Skilled trades</b> — electricians, plumbers, builders on-site","<b>Complex interpersonal</b> — teaching, negotiation, frontline leadership","Lean into judgement, ethics and relationship-building AI can't replicate"]},
+  {cls:"t2", tier:"Route 2 · ride the wave", icon:"🤝", title:"Become the one who directs the AI",
+   desc:"The augmented worker out-earns both the unaugmented worker and the tool alone.",
+   items:["Learn to <b>prompt, supervise and quality-check</b> AI outputs in your field","Pair domain expertise with AI fluency (AI + law, AI + medicine, AI + design)","Shift from <i>doing</i> routine output to <b>editing, judging and deciding</b>","Adopt AI tools early — early adopters capture the productivity premium"]},
+  {cls:"t3", tier:"Route 3 · build the wave", icon:"🚀", title:"Move into the growth roles",
+   desc:"The fastest-growing roles are technical and green — reskill toward them.",
+   items:["<b>AI & data</b> — ML engineering, data science, analytics","<b>Cyber & cloud</b> — security, DevOps, infrastructure","<b>Green economy</b> — renewables, energy storage (+34M jobs by 2030)","Use micro-credentials & online learning — most reskilling needs ≤6 months"]}
+];
+const SKILLS_TECH = [
+  {n:"AI & big data",w:100},{n:"Networks & cybersecurity",w:88},{n:"Technological literacy",w:80},
+  {n:"Programming",w:64},{n:"Environmental stewardship",w:55}
+];
+const SKILLS_HUMAN = [
+  {n:"Analytical thinking",w:100},{n:"Resilience & agility",w:92},{n:"Creative thinking",w:86},
+  {n:"Leadership & influence",w:74},{n:"Curiosity & lifelong learning",w:70}
+];
+const COUNTRY_TIPS = {
+  india:{icon:"🇮🇳",txt:"With the world's most AI-exposed IT-services and BPO base, India's priority is moving its huge entry-level tech workforce <b>up the stack</b> — from routine coding and testing into AI/ML, data and product roles. The Budget's skilling, apprenticeship and AI-advisory programmes (e.g. farm AI, creative-tech labs) aim squarely at this. Manufacturing and construction growth also offers a runway for workers leaving low-productivity agriculture."},
+  nz:{icon:"🇳🇿",txt:"New Zealand's resilience lies in its <b>trades, care and construction</b> strengths, which the infrastructure and health budgets are expanding. The upskilling priority is digital and AI fluency across services — finance, professional and public-sector workers moving from routine admin into advisory and oversight roles — plus continued investment in the chronic shortage areas of healthcare and skilled trades."},
+  world:{icon:"🌍",txt:"Globally the winning formula is a <b>blend</b>: pair fast-growing tech skills (AI, data, cyber) with durable human skills (analytical thinking, resilience, creativity). With 59% of workers needing reskilling by 2030, the decisive factor is <b>access</b> — employer-funded training, public reskilling policy and affordable online learning that reaches the 11% currently at risk of being left behind."}
+};
+
+function renderResilience(){
+  document.getElementById('resStats').innerHTML = RES_STATS.map(s=>
+    `<div class="rstat"><div class="num">${s.num}</div><div class="lab">${s.lab}</div></div>`).join('');
+  document.getElementById('ladder').innerHTML = LADDER.map(l=>`
+    <div class="lcard ${l.cls}">
+      <div class="lhead"><span class="ltier">${l.tier}</span>
+        <h3>${l.icon} ${l.title}</h3><div class="ldesc">${l.desc}</div></div>
+      <ul>${l.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>`).join('');
+  const rankRows=(arr,cls)=>arr.map((s,i)=>`
+    <div class="srank"><span class="sr">${String(i+1).padStart(2,'0')}</span>
+      <span class="snm">${s.n}</span>
+      <span class="sbar"><span class="sbf" style="width:${s.w}%"></span></span></div>`).join('');
+  document.getElementById('skillGrid').innerHTML = `
+    <div class="skillcol tech"><h4>⚙️ Fastest-growing technical skills</h4>${rankRows(SKILLS_TECH,'tech')}</div>
+    <div class="skillcol human"><h4>🧠 Durable human skills</h4>${rankRows(SKILLS_HUMAN,'human')}</div>`;
+  document.getElementById('countryTips').innerHTML = ['india','nz','world'].map(k=>{
+    const c=COUNTRY_TIPS[k];return `<div class="ctip ${k}"><h4>${c.icon} ${CNAMES[k]}</h4><p>${c.txt}</p></div>`;}).join('');
+}
+renderResilience();
+</script>
+</body>
+</html>
